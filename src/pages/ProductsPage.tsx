@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Edit, Trash2, AlertTriangle } from 'lucide-react'
+import { Plus, Search, Edit, Trash2, AlertTriangle, Package } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { Button, Loading, ConfirmDialog } from '@/components/ui'
 import { useProducts, useCategories } from '@/hooks'
