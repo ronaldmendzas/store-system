@@ -1,66 +1,69 @@
+import { useMemo } from 'react'
 import { Download, ShoppingBag } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { Button, Loading } from '@/components/ui'
 import { useSales, useCategories } from '@/hooks'
-import { formatCurrency, formatDate, generateDailySalesPDF } from '@/utils'
+import { formatCurrency, formatDate, generateWeeklySalesPDF, getWeekRange } from '@/utils'
 
 export function SalesPage() {
-  const { todaySales, todayTotal, loading } = useSales()
+  const { weekSales, weekTotal, todayTotal, loading } = useSales()
   const { categories } = useCategories()
+  const week = useMemo(() => getWeekRange(), [])
 
   const handleDownloadPDF = () => {
-    if (todaySales.length === 0) {
-      alert('No hay ventas hoy para generar el reporte')
+    if (weekSales.length === 0) {
+      alert('No hay ventas esta semana para generar el reporte')
       return
     }
-    generateDailySalesPDF(todaySales, categories)
+    generateWeeklySalesPDF(weekSales, categories)
   }
 
-  if (loading) return <PageLayout title="Ventas del Día"><Loading /></PageLayout>
+  if (loading) return <PageLayout title="Ventas"><Loading /></PageLayout>
 
   return (
-    <PageLayout title="📊 Ventas del Día">
-      <div className="bg-green-100 rounded-2xl p-6 mb-6">
-        <p className="text-xl text-center text-green-800">Total vendido hoy:</p>
-        <p className="text-4xl font-bold text-center text-green-600">{formatCurrency(todayTotal)}</p>
+    <PageLayout title="📊 Ventas">
+      {/* Info de la semana */}
+      <div className="stats-card info mb-4">
+        <p className="text-base">Semana: {week.label}</p>
       </div>
 
-      <Button
-        fullWidth
-        size="large"
-        variant="primary"
-        onClick={handleDownloadPDF}
-        className="mb-6"
-      >
-        <Download className="inline mr-2" size={28} />
-        Descargar Reporte PDF
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="stats-card success">
+          <p className="text-sm text-secondary">Hoy</p>
+          <p className="text-2xl font-bold text-green">{formatCurrency(todayTotal)}</p>
+        </div>
+        <div className="stats-card" style={{ background: 'linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(124, 58, 237, 0.1) 100%)', border: '2px solid rgba(168, 85, 247, 0.3)' }}>
+          <p className="text-sm text-secondary">Semana</p>
+          <p className="text-2xl font-bold" style={{ color: '#a855f7' }}>{formatCurrency(weekTotal)}</p>
+        </div>
+      </div>
+
+      <Button fullWidth size="large" variant="primary" onClick={handleDownloadPDF} className="mb-6">
+        <Download className="mr-2" size={24} />
+        Descargar PDF
       </Button>
 
-      <h2 className="text-xl font-bold mb-4">Ventas de hoy ({todaySales.length})</h2>
+      <h2 className="text-lg font-bold mb-4 text-primary">Ventas esta semana ({weekSales.length})</h2>
 
-      {todaySales.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <ShoppingBag className="w-16 h-16 mx-auto mb-4 opacity-50" />
-          <p className="text-xl">No hay ventas hoy</p>
-          <p className="text-lg">Las ventas aparecerán aquí</p>
+      {weekSales.length === 0 ? (
+        <div className="text-center py-12 text-secondary">
+          <ShoppingBag size={64} className="mx-auto mb-4 opacity-30" />
+          <p className="text-xl">No hay ventas</p>
+          <p className="text-base">Las ventas aparecerán aquí</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {todaySales.map((sale) => (
-            <div
-              key={sale.id}
-              className="bg-white rounded-2xl p-4 shadow-sm"
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-bold">{sale.productName}</h3>
-                  <p className="text-gray-500">
-                    {sale.quantity} x {formatCurrency(sale.unitPrice)}
-                  </p>
-                  <p className="text-sm text-gray-400">{formatDate(sale.createdAt)}</p>
-                </div>
-                <p className="text-xl font-bold text-green-600">{formatCurrency(sale.total)}</p>
+          {weekSales.map((sale) => (
+            <div key={sale.id} className="product-item">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold truncate">{sale.productName}</h3>
+                <p className="text-secondary text-sm">
+                  {sale.quantity} × {formatCurrency(sale.unitPrice)}
+                </p>
+                <p className="text-sm text-muted">{formatDate(sale.createdAt)}</p>
               </div>
+              <p className="text-xl font-bold text-green flex-shrink-0">{formatCurrency(sale.total)}</p>
             </div>
           ))}
         </div>

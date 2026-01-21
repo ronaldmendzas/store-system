@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Moon, Sun } from 'lucide-react'
+import { useTheme } from '@/hooks'
 
 interface PageLayoutProps {
   title: string
@@ -11,24 +12,37 @@ interface PageLayoutProps {
 export function PageLayout({ title, children, showBack = true }: PageLayoutProps) {
   const navigate = useNavigate()
   const location = useLocation()
+  const { isDark, toggleTheme } = useTheme()
   const isHome = location.pathname === '/'
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-blue-500 text-white p-4 sticky top-0 z-40 shadow-lg">
-        <div className="flex items-center gap-4">
-          {showBack && !isHome && (
-            <button
-              onClick={() => navigate(-1)}
-              className="p-2 rounded-full hover:bg-blue-600 active:scale-95"
-            >
-              <ArrowLeft size={28} />
-            </button>
-          )}
-          <h1 className="text-2xl font-bold truncate">{title}</h1>
+    <div className="min-h-screen bg-primary">
+      <header className="app-header">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {showBack && !isHome && (
+              <button
+                onClick={() => navigate(-1)}
+                className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center
+                  hover:bg-white/30 transition-all"
+              >
+                <ArrowLeft size={24} />
+              </button>
+            )}
+            <h1 className="text-xl font-bold truncate">{title}</h1>
+          </div>
+          
+          <button
+            onClick={toggleTheme}
+            className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center
+              hover:bg-white/30 transition-all"
+            title={isDark ? 'Modo claro' : 'Modo oscuro'}
+          >
+            {isDark ? <Sun size={22} /> : <Moon size={22} />}
+          </button>
         </div>
       </header>
-      <main className="p-4 pb-24">{children}</main>
+      <main className="p-4 pb-safe animate-fadeIn">{children}</main>
     </div>
   )
 }

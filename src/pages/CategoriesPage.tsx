@@ -45,7 +45,7 @@ export function CategoriesPage() {
       }
       closeModal()
     } catch {
-      alert('Error al guardar la categoría')
+      alert('Error al guardar')
     } finally {
       setSaving(false)
     }
@@ -62,49 +62,39 @@ export function CategoriesPage() {
 
   return (
     <PageLayout title="🏷️ Categorías">
-      <Button
-        fullWidth
-        size="large"
-        onClick={openCreateModal}
-        className="mb-6"
-      >
-        <Plus className="inline mr-2" size={28} />
+      <Button fullWidth size="large" onClick={openCreateModal} className="mb-6">
+        <Plus className="mr-2" size={24} />
         Nueva Categoría
       </Button>
 
       {categories.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <FolderOpen className="w-16 h-16 mx-auto mb-4 opacity-50" />
+        <div className="text-center py-12 text-secondary">
+          <FolderOpen size={64} className="mx-auto mb-4 opacity-30" />
           <p className="text-xl">No hay categorías</p>
-          <p className="text-lg">Crea una para organizar tus productos</p>
+          <p className="text-base">Crea una para organizar tus productos</p>
         </div>
       ) : (
         <div className="space-y-3">
           {categories.map((category) => (
-            <div
-              key={category.id}
-              className="bg-white rounded-2xl p-5 shadow-sm flex items-center justify-between"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <FolderOpen className="w-6 h-6 text-purple-600" />
-                </div>
-                <h3 className="text-xl font-bold">{category.name}</h3>
+            <div key={category.id} className="product-item">
+              <div className="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center flex-shrink-0">
+                <FolderOpen size={24} className="text-white" />
               </div>
+              <h3 className="flex-1 font-bold text-lg">{category.name}</h3>
               <div className="flex gap-2">
                 <button
                   onClick={() => openEditModal(category)}
-                  className="p-3 bg-blue-100 rounded-xl hover:bg-blue-200"
-                  title="Editar categoría"
+                  className="btn-circle edit"
+                  style={{ width: '44px', height: '44px' }}
                 >
-                  <Edit size={24} className="text-blue-600" />
+                  <Edit size={20} />
                 </button>
                 <button
                   onClick={() => setDeleteCategory(category)}
-                  className="p-3 bg-red-100 rounded-xl hover:bg-red-200"
-                  title="Eliminar categoría"
+                  className="btn-circle delete"
+                  style={{ width: '44px', height: '44px' }}
                 >
-                  <Trash2 size={24} className="text-red-600" />
+                  <Trash2 size={20} />
                 </button>
               </div>
             </div>

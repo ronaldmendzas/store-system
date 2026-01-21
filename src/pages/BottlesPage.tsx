@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Trash2, Wine, Check } from 'lucide-react'
+import { Plus, Wine, Check } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { Button, Input, Modal, Loading, ConfirmDialog } from '@/components/ui'
 import { useBottleLoans } from '@/hooks'
@@ -57,50 +57,42 @@ export function BottlesPage() {
 
   return (
     <PageLayout title="🍾 Botellas Prestadas">
-      <div className="bg-orange-100 rounded-2xl p-6 mb-6">
-        <p className="text-xl text-center text-orange-800">Total en garantías:</p>
-        <p className="text-4xl font-bold text-center text-orange-600">{formatCurrency(totalGuarantee)}</p>
+      <div className="stats-card warning mb-6">
+        <p className="text-base">Total en garantías:</p>
+        <p className="text-3xl font-bold">{formatCurrency(totalGuarantee)}</p>
       </div>
 
-      <Button
-        fullWidth
-        size="large"
-        onClick={() => setShowModal(true)}
-        className="mb-6"
-      >
-        <Plus className="inline mr-2" size={28} />
+      <Button fullWidth size="large" onClick={() => setShowModal(true)} className="mb-6">
+        <Plus className="mr-2" size={24} />
         Registrar Préstamo
       </Button>
 
       {loans.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <Wine className="w-16 h-16 mx-auto mb-4 opacity-50" />
+        <div className="text-center py-12 text-secondary">
+          <Wine size={64} className="mx-auto mb-4 opacity-30" />
           <p className="text-xl">No hay botellas prestadas</p>
-          <p className="text-lg">¡Todo está en orden!</p>
+          <p className="text-base">¡Todo está en orden!</p>
         </div>
       ) : (
         <div className="space-y-3">
           {loans.map((loan) => (
-            <div
-              key={loan.id}
-              className="bg-white rounded-2xl p-4 shadow-sm"
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold">{loan.debtorName}</h3>
-                  <p className="text-lg text-gray-600">{loan.bottleType}</p>
-                  <p className="text-lg font-bold text-orange-600">
-                    Garantía: {formatCurrency(loan.guaranteeAmount)}
-                  </p>
-                  <p className="text-sm text-gray-400">{formatDate(loan.createdAt)}</p>
-                </div>
-                <button
-                  onClick={() => setReturnLoan(loan)}
-                  className="p-4 bg-green-100 rounded-xl hover:bg-green-200 flex-shrink-0"
-                >
-                  <Check size={28} className="text-green-600" />
-                </button>
+            <div key={loan.id} className="product-item">
+              <div className="flex-1">
+                <h3 className="font-bold text-lg">{loan.debtorName}</h3>
+                <p className="text-secondary">{loan.bottleType}</p>
+                <p className="font-bold text-warning">
+                  Garantía: {formatCurrency(loan.guaranteeAmount)}
+                </p>
+                <p className="text-xs text-secondary">{formatDate(loan.createdAt)}</p>
               </div>
+              <button
+                onClick={() => setReturnLoan(loan)}
+                className="btn-circle add"
+                style={{ width: '56px', height: '56px' }}
+                title="Marcar como devuelta"
+              >
+                <Check size={28} />
+              </button>
             </div>
           ))}
         </div>

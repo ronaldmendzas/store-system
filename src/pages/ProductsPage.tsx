@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Edit, Trash2, AlertTriangle, Package } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
@@ -15,8 +15,9 @@ export function ProductsPage() {
   const [search, setSearch] = useState('')
   const [deleteProduct, setDeleteProduct] = useState<Product | null>(null)
 
-  const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(search.toLowerCase())
+  const filteredProducts = useMemo(() => 
+    products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase())),
+    [products, search]
   )
 
   const getCategoryName = (categoryId: string) => {
@@ -36,73 +37,67 @@ export function ProductsPage() {
 
   return (
     <PageLayout title="📦 Productos">
-      <div className="mb-4">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={24} />
-          <input
-            type="text"
-            placeholder="Buscar producto..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full py-4 pl-14 pr-4 text-xl border-2 border-gray-300 rounded-xl
-              focus:border-blue-500 focus:outline-none"
-          />
-        </div>
+      {/* Buscador */}
+      <div className="relative mb-4">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" size={20} />
+        <input
+          type="text"
+          placeholder="Buscar producto..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          style={{ paddingLeft: '48px' }}
+        />
       </div>
 
-      <Button
-        fullWidth
-        size="large"
-        onClick={() => navigate('/products/new')}
-        className="mb-6"
-      >
-        <Plus className="inline mr-2" size={28} />
+      <Button fullWidth size="large" onClick={() => navigate('/products/new')} className="mb-6">
+        <Plus className="mr-2" size={24} />
         Agregar Producto
       </Button>
 
       {filteredProducts.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <Package className="w-16 h-16 mx-auto mb-4 opacity-50" />
+        <div className="text-center py-12 text-secondary">
+          <Package size={64} className="mx-auto mb-4 opacity-30" />
           <p className="text-xl">No hay productos</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              className={`bg-white rounded-2xl p-4 shadow-sm flex gap-4
-                ${isLowStock(product) ? 'ring-2 ring-red-500' : ''}`}
+              className={`product-item ${isLowStock(product) ? 'feedback-sold' : ''}`}
             >
               <img
                 src={product.imageUrl || '/placeholder.svg'}
                 alt={product.name}
-                className="w-24 h-24 rounded-xl object-cover flex-shrink-0"
+                className="w-20 h-20 object-cover"
               />
               <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between gap-2">
-                  <h3 className="text-xl font-bold truncate">{product.name}</h3>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-bold truncate">{product.name}</h3>
                   {isLowStock(product) && (
-                    <AlertTriangle className="w-6 h-6 text-red-500 flex-shrink-0" />
+                    <AlertTriangle size={18} className="text-red flex-shrink-0" />
                   )}
                 </div>
-                <p className="text-gray-500">{getCategoryName(product.categoryId)}</p>
-                <p className="text-2xl font-bold text-blue-600">{formatCurrency(product.price)}</p>
-                <p className={`text-lg font-bold ${isLowStock(product) ? 'text-red-600' : 'text-green-600'}`}>
+                <p className="text-secondary text-sm">{getCategoryName(product.categoryId)}</p>
+                <p className="text-blue font-bold text-lg">{formatCurrency(product.price)}</p>
+                <p className={`text-sm font-bold ${isLowStock(product) ? 'text-red' : 'text-green'}`}>
                   Stock: {product.quantity}
                 </p>
               </div>
               <div className="flex flex-col gap-2">
                 <button
                   onClick={() => navigate(`/products/${product.id}`)}
-                  className="p-3 bg-blue-100 rounded-xl hover:bg-blue-200"
+                  className="btn-circle edit"
+                  style={{ width: '44px', height: '44px' }}
                 >
-                  <Edit size={24} className="text-blue-600" />
+                  <Edit size={20} />
                 </button>
                 <button
                   onClick={() => setDeleteProduct(product)}
-                  className="p-3 bg-red-100 rounded-xl hover:bg-red-200"
+                  className="btn-circle delete"
+                  style={{ width: '44px', height: '44px' }}
                 >
-                  <Trash2 size={24} className="text-red-600" />
+                  <Trash2 size={20} />
                 </button>
               </div>
             </div>

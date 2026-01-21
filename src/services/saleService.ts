@@ -1,6 +1,8 @@
 import {
   collection,
   addDoc,
+  deleteDoc,
+  doc,
   query,
   orderBy,
   onSnapshot,
@@ -46,6 +48,48 @@ export const saleService = {
       createdAt: Timestamp.now()
     })
     return docRef.id
+  },
+
+  // Cancelar última venta de un producto (devuelve stock)
+  async cancelLastSale(productId: string): Promise<boolean> {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    
+    // Query simple sin índice compuesto - solo por productId
+    const q = query(
+      collection(db, COLLECTION_NAME),
+      where('productId', '==', productId)
+    )
+    
+    const snapshot = await getDocs(q)
+    
+    if (snapshot.empty) {
+      return false
+    }
+    
+    // Filtrar las de hoy y ordenar manualmente
+    const todaySales = snapshot.docs
+      .map(docSnap => ({
+        docSnap,
+        createdAt: docSnap.data().createdAt?.toDate() || new Date(0)
+      }))
+      .filter(item => item.createdAt >= today)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    
+    if (todaySales.length === 0) {
+      return false // No hay ventas de este producto hoy
+    }
+    
+    const { docSnap: saleDoc } = todaySales[0]
+    const saleData = saleDoc.data()
+    
+    // Devolver el stock
+    await productService.updateQuantity(productId, saleData.quantity)
+    
+    // Eliminar la venta
+    await deleteDoc(doc(db, COLLECTION_NAME, saleDoc.id))
+    
+    return true
   },
 
   async getTodaySales(): Promise<Sale[]> {

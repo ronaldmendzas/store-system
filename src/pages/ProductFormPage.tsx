@@ -124,32 +124,32 @@ export function ProductFormPage() {
         />
 
         <div className="mb-4">
-          <label className="block text-lg font-bold text-gray-700 mb-2">
+          <label className="block text-base font-bold mb-2">
             Cantidad en Stock
           </label>
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => adjustQuantity(-1)}
-              className="w-16 h-16 bg-red-500 text-white rounded-xl text-3xl
-                flex items-center justify-center active:scale-95"
+              className="btn-circle sell"
+              style={{ width: '56px', height: '56px' }}
             >
-              <Minus size={32} />
+              <Minus size={28} />
             </button>
             <input
               type="number"
               value={form.quantity}
               onChange={(e) => updateField('quantity', parseInt(e.target.value) || 0)}
-              className="flex-1 py-4 px-4 text-3xl text-center font-bold
-                border-2 border-gray-300 rounded-xl"
+              className="flex-1 py-4 px-4 text-2xl text-center font-bold
+                border-2 rounded-xl bg-secondary border-color"
             />
             <button
               type="button"
               onClick={() => adjustQuantity(1)}
-              className="w-16 h-16 bg-green-500 text-white rounded-xl text-3xl
-                flex items-center justify-center active:scale-95"
+              className="btn-circle add"
+              style={{ width: '56px', height: '56px' }}
             >
-              <Plus size={32} />
+              <Plus size={28} />
             </button>
           </div>
         </div>
@@ -178,7 +178,7 @@ export function ProductFormPage() {
           disabled={saving}
           className="mt-6"
         >
-          <Save className="inline mr-2" size={28} />
+          <Save className="mr-2" size={24} />
           {saving ? 'Guardando...' : 'Guardar Producto'}
         </Button>
       </form>

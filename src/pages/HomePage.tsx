@@ -11,28 +11,33 @@ export function HomePage() {
 
   return (
     <PageLayout title="🏪 Mi Tienda" showBack={false}>
-      <div className="mb-6 bg-green-100 rounded-2xl p-4">
-        <p className="text-lg text-green-800">Ventas de hoy</p>
-        <p className="text-3xl font-bold text-green-600">{formatCurrency(todayTotal)}</p>
+      {/* Stats de ventas */}
+      <div className="stats-card success mb-4">
+        <p className="text-secondary text-base mb-1">Ventas de hoy</p>
+        <p className="text-3xl font-bold text-green">{formatCurrency(todayTotal)}</p>
       </div>
 
+      {/* Alerta de stock bajo */}
       {lowStockProducts.length > 0 && (
-        <div className="mb-6 bg-red-100 rounded-2xl p-4 flex items-center gap-4">
-          <AlertTriangle className="w-10 h-10 text-red-500" />
+        <div className="stats-card warning mb-4 flex items-center gap-4 text-left">
+          <div className="w-12 h-12 rounded-xl gradient-orange flex items-center justify-center flex-shrink-0">
+            <AlertTriangle className="text-white" size={24} />
+          </div>
           <div>
-            <p className="text-lg font-bold text-red-800">¡Productos con poco stock!</p>
-            <p className="text-red-600">{lowStockProducts.length} producto(s) necesitan reposición</p>
+            <p className="font-bold text-primary">¡Stock bajo!</p>
+            <p className="text-secondary text-sm">{lowStockProducts.length} producto(s) por agotarse</p>
           </div>
         </div>
       )}
 
-      <div className="grid gap-4">
+      {/* Menú principal */}
+      <div className="space-y-4">
         <MenuCard
           title="Productos"
           description="Ver y gestionar productos"
           icon={Package}
           to="/products"
-          color="bg-blue-500 hover:bg-blue-600"
+          gradient="gradient-blue"
           alert={lowStockProducts.length}
         />
 
@@ -41,15 +46,15 @@ export function HomePage() {
           description="Organizar por categorías"
           icon={Tags}
           to="/categories"
-          color="bg-purple-500 hover:bg-purple-600"
+          gradient="gradient-purple"
         />
 
         <MenuCard
           title="Vender"
-          description="Registrar una venta"
+          description="Registrar ventas"
           icon={ShoppingCart}
           to="/sell"
-          color="bg-green-500 hover:bg-green-600"
+          gradient="gradient-green"
         />
 
         <MenuCard
@@ -57,16 +62,16 @@ export function HomePage() {
           description={`${loans.length} pendiente(s)`}
           icon={Wine}
           to="/bottles"
-          color="bg-orange-500 hover:bg-orange-600"
+          gradient="gradient-orange"
           alert={loans.length > 0 ? loans.length : undefined}
         />
 
         <MenuCard
-          title="Ventas del Día"
+          title="Ventas de la Semana"
           description="Historial y reporte PDF"
           icon={FileText}
           to="/sales"
-          color="bg-teal-500 hover:bg-teal-600"
+          gradient="gradient-teal"
         />
       </div>
     </PageLayout>

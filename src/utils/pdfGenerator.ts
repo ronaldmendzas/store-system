@@ -3,35 +3,85 @@ import autoTable from 'jspdf-autotable'
 import { Sale, Category } from '@/types'
 import { formatCurrency, formatShortDate } from './format'
 
+interface ProductSummary {
+  productName: string
+  totalQuantity: number
+  unitPrice: number
+  totalAmount: number
+}
+
 interface SalesByCategory {
   categoryName: string
-  sales: Sale[]
+  products: ProductSummary[]
   total: number
 }
 
-export function generateDailySalesPDF(
+function getWeekRange(): { start: Date; end: Date; label: string } {
+  const today = new Date()
+  const dayOfWeek = today.getDay()
+  const start = new Date(today)
+  start.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1))
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(start)
+  end.setDate(start.getDate() + 6)
+  end.setHours(23, 59, 59, 999)
+  return {
+    start,
+    end,
+    label: `${formatShortDate(start)} - ${formatShortDate(end)}`
+  }
+}
+
+// Agrupa ventas por producto para un reporte limpio
+function groupSalesByProduct(sales: Sale[]): Map<string, ProductSummary> {
+  const productMap = new Map<string, ProductSummary>()
+  
+  for (const sale of sales) {
+    const existing = productMap.get(sale.productId)
+    if (existing) {
+      existing.totalQuantity += sale.quantity
+      existing.totalAmount += sale.total
+    } else {
+      productMap.set(sale.productId, {
+        productName: sale.productName,
+        totalQuantity: sale.quantity,
+        unitPrice: sale.unitPrice,
+        totalAmount: sale.total
+      })
+    }
+  }
+  
+  return productMap
+}
+
+export function generateWeeklySalesPDF(
   sales: Sale[],
   categories: Category[]
 ): void {
   const doc = new jsPDF()
-  const today = new Date()
+  const week = getWeekRange()
 
   doc.setFontSize(20)
-  doc.text('Reporte de Ventas del Día', 105, 20, { align: 'center' })
+  doc.text('Reporte de Ventas Semanal', 105, 20, { align: 'center' })
   
   doc.setFontSize(12)
-  doc.text(`Fecha: ${formatShortDate(today)}`, 105, 30, { align: 'center' })
+  doc.text(`Semana: ${week.label}`, 105, 30, { align: 'center' })
 
+  // Agrupar ventas por categoría y luego por producto
   const salesByCategory: SalesByCategory[] = categories
     .map((category) => {
       const categorySales = sales.filter((s) => s.categoryId === category.id)
+      const productMap = groupSalesByProduct(categorySales)
+      const products = Array.from(productMap.values())
+        .filter(p => p.totalQuantity > 0) // Solo productos con cantidad positiva
+      
       return {
         categoryName: category.name,
-        sales: categorySales,
-        total: categorySales.reduce((sum, s) => sum + s.total, 0)
+        products,
+        total: products.reduce((sum, p) => sum + p.totalAmount, 0)
       }
     })
-    .filter((group) => group.sales.length > 0)
+    .filter((group) => group.products.length > 0)
 
   let yPosition = 45
 
@@ -44,11 +94,11 @@ export function generateDailySalesPDF(
     autoTable(doc, {
       startY: yPosition,
       head: [['Producto', 'Cantidad', 'Precio Unit.', 'Total']],
-      body: group.sales.map((sale) => [
-        sale.productName,
-        sale.quantity.toString(),
-        formatCurrency(sale.unitPrice),
-        formatCurrency(sale.total)
+      body: group.products.map((product) => [
+        product.productName,
+        product.totalQuantity.toString(),
+        formatCurrency(product.unitPrice),
+        formatCurrency(product.totalAmount)
       ]),
       foot: [[
         'Subtotal ' + group.categoryName,
@@ -64,11 +114,14 @@ export function generateDailySalesPDF(
     yPosition = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 15
   })
 
-  const grandTotal = sales.reduce((sum, s) => sum + s.total, 0)
+  const grandTotal = salesByCategory.reduce((sum, g) => sum + g.total, 0)
   
   doc.setFontSize(16)
   doc.setFont('helvetica', 'bold')
-  doc.text(`TOTAL DEL DÍA: ${formatCurrency(grandTotal)}`, 105, yPosition, { align: 'center' })
+  doc.text(`TOTAL DE LA SEMANA: ${formatCurrency(grandTotal)}`, 105, yPosition, { align: 'center' })
 
-  doc.save(`ventas-${formatShortDate(today)}.pdf`)
+  doc.save(`ventas-semana-${formatShortDate(week.start)}.pdf`)
 }
+
+// También exportar la función para obtener rango de semana
+export { getWeekRange }
