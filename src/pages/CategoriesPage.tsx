@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, Trash2, FolderOpen } from 'lucide-react'
+import { Plus, Trash2, FolderOpen, Edit } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { Button, Input, Modal, Loading, ConfirmDialog } from '@/components/ui'
 import { useCategories } from '@/hooks'
@@ -9,21 +9,43 @@ import { Category } from '@/types'
 export function CategoriesPage() {
   const { categories, loading } = useCategories()
   const [showModal, setShowModal] = useState(false)
-  const [newCategory, setNewCategory] = useState('')
+  const [categoryName, setCategoryName] = useState('')
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [deleteCategory, setDeleteCategory] = useState<Category | null>(null)
   const [saving, setSaving] = useState(false)
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const openCreateModal = () => {
+    setEditingCategory(null)
+    setCategoryName('')
+    setShowModal(true)
+  }
+
+  const openEditModal = (category: Category) => {
+    setEditingCategory(category)
+    setCategoryName(category.name)
+    setShowModal(true)
+  }
+
+  const closeModal = () => {
+    setShowModal(false)
+    setEditingCategory(null)
+    setCategoryName('')
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newCategory.trim()) return
+    if (!categoryName.trim()) return
 
     setSaving(true)
     try {
-      await categoryService.create({ name: newCategory.trim() })
-      setNewCategory('')
-      setShowModal(false)
+      if (editingCategory) {
+        await categoryService.update(editingCategory.id, { name: categoryName.trim() })
+      } else {
+        await categoryService.create({ name: categoryName.trim() })
+      }
+      closeModal()
     } catch {
-      alert('Error al crear la categoría')
+      alert('Error al guardar la categoría')
     } finally {
       setSaving(false)
     }
@@ -43,7 +65,7 @@ export function CategoriesPage() {
       <Button
         fullWidth
         size="large"
-        onClick={() => setShowModal(true)}
+        onClick={openCreateModal}
         className="mb-6"
       >
         <Plus className="inline mr-2" size={28} />
@@ -69,12 +91,22 @@ export function CategoriesPage() {
                 </div>
                 <h3 className="text-xl font-bold">{category.name}</h3>
               </div>
-              <button
-                onClick={() => setDeleteCategory(category)}
-                className="p-3 bg-red-100 rounded-xl hover:bg-red-200"
-              >
-                <Trash2 size={24} className="text-red-600" />
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => openEditModal(category)}
+                  className="p-3 bg-blue-100 rounded-xl hover:bg-blue-200"
+                  title="Editar categoría"
+                >
+                  <Edit size={24} className="text-blue-600" />
+                </button>
+                <button
+                  onClick={() => setDeleteCategory(category)}
+                  className="p-3 bg-red-100 rounded-xl hover:bg-red-200"
+                  title="Eliminar categoría"
+                >
+                  <Trash2 size={24} className="text-red-600" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -82,15 +114,15 @@ export function CategoriesPage() {
 
       <Modal
         isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title="Nueva Categoría"
+        onClose={closeModal}
+        title={editingCategory ? 'Editar Categoría' : 'Nueva Categoría'}
       >
-        <form onSubmit={handleCreate}>
+        <form onSubmit={handleSubmit}>
           <Input
             label="Nombre de la categoría"
             id="categoryName"
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
+            value={categoryName}
+            onChange={(e) => setCategoryName(e.target.value)}
             placeholder="Ej: Bebidas, Dulces, Botanas..."
             autoFocus
           />
@@ -98,9 +130,9 @@ export function CategoriesPage() {
             type="submit"
             fullWidth
             size="large"
-            disabled={saving || !newCategory.trim()}
+            disabled={saving || !categoryName.trim()}
           >
-            {saving ? 'Guardando...' : 'Crear Categoría'}
+            {saving ? 'Guardando...' : editingCategory ? 'Guardar Cambios' : 'Crear Categoría'}
           </Button>
         </form>
       </Modal>
