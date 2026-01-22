@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Plus, Trash2, FolderOpen, Edit } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Plus, Trash2, FolderOpen, Edit, Eye } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { Button, Input, Modal, Loading, ConfirmDialog } from '@/components/ui'
 import { useCategories } from '@/hooks'
@@ -7,6 +8,7 @@ import { categoryService } from '@/services'
 import { Category } from '@/types'
 
 export function CategoriesPage() {
+  const navigate = useNavigate()
   const { categories, loading } = useCategories()
   const [showModal, setShowModal] = useState(false)
   const [categoryName, setCategoryName] = useState('')
@@ -77,15 +79,32 @@ export function CategoriesPage() {
         <div className="space-y-3">
           {categories.map((category) => (
             <div key={category.id} className="product-item">
-              <div className="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center flex-shrink-0">
+              <div 
+                className="w-12 h-12 gradient-purple rounded-xl flex items-center justify-center flex-shrink-0 cursor-pointer"
+                onClick={() => navigate(`/categories/${category.id}`)}
+              >
                 <FolderOpen size={24} className="text-white" />
               </div>
-              <h3 className="flex-1 font-bold text-lg">{category.name}</h3>
+              <h3 
+                className="flex-1 font-bold text-lg cursor-pointer"
+                onClick={() => navigate(`/categories/${category.id}`)}
+              >
+                {category.name}
+              </h3>
               <div className="flex gap-2">
+                <button
+                  onClick={() => navigate(`/categories/${category.id}`)}
+                  className="btn-circle add"
+                  style={{ width: '44px', height: '44px' }}
+                  title="Ver productos"
+                >
+                  <Eye size={20} />
+                </button>
                 <button
                   onClick={() => openEditModal(category)}
                   className="btn-circle edit"
                   style={{ width: '44px', height: '44px' }}
+                  title="Editar categoría"
                 >
                   <Edit size={20} />
                 </button>
@@ -93,6 +112,7 @@ export function CategoriesPage() {
                   onClick={() => setDeleteCategory(category)}
                   className="btn-circle delete"
                   style={{ width: '44px', height: '44px' }}
+                  title="Eliminar categoría"
                 >
                   <Trash2 size={20} />
                 </button>

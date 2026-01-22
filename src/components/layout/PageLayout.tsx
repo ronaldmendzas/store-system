@@ -7,13 +7,22 @@ interface PageLayoutProps {
   title: string
   children: ReactNode
   showBack?: boolean
+  customBackAction?: () => void
 }
 
-export function PageLayout({ title, children, showBack = true }: PageLayoutProps) {
+export function PageLayout({ title, children, showBack = true, customBackAction }: PageLayoutProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { isDark, toggleTheme } = useTheme()
   const isHome = location.pathname === '/'
+
+  const handleBack = () => {
+    if (customBackAction) {
+      customBackAction()
+    } else {
+      navigate(-1)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-primary">
@@ -22,9 +31,10 @@ export function PageLayout({ title, children, showBack = true }: PageLayoutProps
           <div className="flex items-center gap-3">
             {showBack && !isHome && (
               <button
-                onClick={() => navigate(-1)}
+                onClick={handleBack}
                 className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center
                   hover:bg-white/30 transition-all"
+                title="Volver"
               >
                 <ArrowLeft size={24} />
               </button>

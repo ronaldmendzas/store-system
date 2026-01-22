@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Plus, Minus, Save } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { Button, Input, Select, ImageUpload, Loading } from '@/components/ui'
@@ -7,26 +7,33 @@ import { useCategories, useProducts } from '@/hooks'
 import { productService } from '@/services'
 import { ProductFormData } from '@/types'
 
-const initialFormData: ProductFormData = {
-  name: '',
-  price: 0,
-  description: '',
-  imageUrl: '',
-  quantity: 0,
-  categoryId: '',
-  alertLimit: 5
-}
-
 export function ProductFormPage() {
   const navigate = useNavigate()
   const { id } = useParams()
+  const [searchParams] = useSearchParams()
   const isEditing = !!id
+  const preselectedCategoryId = searchParams.get('category') || ''
 
   const { categories, loading: loadingCategories } = useCategories()
   const { products, loading: loadingProducts } = useProducts()
 
-  const [form, setForm] = useState<ProductFormData>(initialFormData)
+  const [form, setForm] = useState<ProductFormData>({
+    name: '',
+    price: 0,
+    description: '',
+    imageUrl: '',
+    quantity: 0,
+    categoryId: preselectedCategoryId,
+    alertLimit: 5
+  })
   const [saving, setSaving] = useState(false)
+
+  // Actualizar categoryId cuando se carga desde URL
+  useEffect(() => {
+    if (preselectedCategoryId && !isEditing) {
+      setForm(prev => ({ ...prev, categoryId: preselectedCategoryId }))
+    }
+  }, [preselectedCategoryId, isEditing])
 
   useEffect(() => {
     if (isEditing && !loadingProducts) {
@@ -73,7 +80,12 @@ export function ProductFormPage() {
       } else {
         await productService.create(form)
       }
-      navigate('/products')
+      // Si venía de una categoría, volver ahí; si no, ir a productos
+      if (preselectedCategoryId) {
+        navigate(`/categories/${preselectedCategoryId}`, { replace: true })
+      } else {
+        navigate('/products', { replace: true })
+      }
     } catch {
       alert('Error al guardar el producto')
     } finally {
@@ -138,8 +150,9 @@ export function ProductFormPage() {
             </button>
             <input
               type="number"
-              value={form.quantity}
+              value={form.quantity || ''}
               onChange={(e) => updateField('quantity', parseInt(e.target.value) || 0)}
+              placeholder="0"
               className="flex-1 py-4 px-4 text-2xl text-center font-bold
                 border-2 rounded-xl bg-secondary border-color"
             />
@@ -159,8 +172,9 @@ export function ProductFormPage() {
           id="alertLimit"
           type="number"
           min="0"
-          value={form.alertLimit}
+          value={form.alertLimit || ''}
           onChange={(e) => updateField('alertLimit', parseInt(e.target.value) || 0)}
+          placeholder="5"
         />
 
         <Input

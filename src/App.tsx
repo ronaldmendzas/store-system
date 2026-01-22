@@ -4,6 +4,7 @@ import {
   ProductsPage,
   ProductFormPage,
   CategoriesPage,
+  CategoryProductsPage,
   SellPage,
   SalesPage,
   BottlesPage
@@ -18,6 +19,7 @@ export function App() {
         <Route path="/products/new" element={<ProductFormPage />} />
         <Route path="/products/:id" element={<ProductFormPage />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/categories/:categoryId" element={<CategoryProductsPage />} />
         <Route path="/sell" element={<SellPage />} />
         <Route path="/sales" element={<SalesPage />} />
         <Route path="/bottles" element={<BottlesPage />} />
