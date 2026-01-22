@@ -7,7 +7,10 @@ import {
   CategoryProductsPage,
   SellPage,
   SalesPage,
-  BottlesPage
+  BottlesPage,
+  OrdersPage,
+  NewOrderPage,
+  OrderDetailPage
 } from '@/pages'
 
 export function App() {
@@ -23,6 +26,9 @@ export function App() {
         <Route path="/sell" element={<SellPage />} />
         <Route path="/sales" element={<SalesPage />} />
         <Route path="/bottles" element={<BottlesPage />} />
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/orders/new" element={<NewOrderPage />} />
+        <Route path="/orders/:id" element={<OrderDetailPage />} />
       </Routes>
     </BrowserRouter>
   )

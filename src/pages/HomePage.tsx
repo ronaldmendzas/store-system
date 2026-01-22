@@ -1,13 +1,14 @@
-import { Package, Tags, ShoppingCart, Wine, FileText, AlertTriangle } from 'lucide-react'
+import { Package, Tags, ShoppingCart, Wine, FileText, AlertTriangle, ClipboardList } from 'lucide-react'
 import { PageLayout } from '@/components/layout/PageLayout'
 import { MenuCard } from '@/components/layout/MenuCard'
-import { useProducts, useBottleLoans, useSales } from '@/hooks'
+import { useProducts, useBottleLoans, useSales, useOrders } from '@/hooks'
 import { formatCurrency } from '@/utils'
 
 export function HomePage() {
   const { lowStockProducts } = useProducts()
   const { loans } = useBottleLoans()
   const { todayTotal } = useSales()
+  const { pendingCount } = useOrders()
 
   return (
     <PageLayout title="🏪 Mi Tienda" showBack={false}>
@@ -55,6 +56,15 @@ export function HomePage() {
           icon={ShoppingCart}
           to="/sell"
           gradient="gradient-green"
+        />
+
+        <MenuCard
+          title="Pedidos"
+          description={pendingCount > 0 ? `${pendingCount} pedido(s) pendiente(s)` : "Lista de reposición"}
+          icon={ClipboardList}
+          to="/orders"
+          gradient="gradient-cyan"
+          alert={pendingCount > 0 ? pendingCount : undefined}
         />
 
         <MenuCard
